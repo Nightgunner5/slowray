@@ -5,16 +5,17 @@ import (
 	"image/color"
 	"image/png"
 	"os"
+	"runtime"
 	"sync"
 )
 
 const (
 	ppi  = 16 // points per image
-	ppp  = 4  // pixels per point
+	ppp  = 32 // pixels per point
 	spp  = 4  // samples per pixel
 	spp2 = spp * spp
 
-	epsilon = 0.001
+	epsilon = 0.01
 	nearZ   = 1
 	farZ    = 100
 )
@@ -24,11 +25,11 @@ func Pixel(x, y int, img *image.RGBA64, wg *sync.WaitGroup) {
 
 	for i := 0; i < spp; i++ {
 		for j := 0; j < spp; j++ {
-			X := (float64(x) + float64(i)/spp) / ppp
-			Y := (float64(y) + float64(j)/spp) / ppp
+			X := (float64(x)+float64(i)/spp)/ppp - ppi/2
+			Y := ppi/2 - (float64(y)+float64(j)/spp)/ppp
 			c := Ray(X, Y, -10,
-				(X/ppi-0.5)*epsilon,
-				(Y/ppi-0.5)*epsilon,
+				X/ppi*epsilon,
+				Y/ppi*epsilon,
 				1*epsilon,
 				farZ)
 
@@ -43,6 +44,10 @@ func Pixel(x, y int, img *image.RGBA64, wg *sync.WaitGroup) {
 }
 
 func main() {
+	if runtime.GOMAXPROCS(0) == 1 {
+		runtime.GOMAXPROCS(runtime.NumCPU())
+	}
+
 	var wg sync.WaitGroup
 
 	const dim = ppi * ppp
