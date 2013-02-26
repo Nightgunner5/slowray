@@ -5,6 +5,8 @@ import (
 	"math"
 )
 
+var fog = color.RGBA64{0x2, 0x4, 0x5, 0x5}
+
 func Ray(x, y, z, dx, dy, dz, maxDistance float64) color.RGBA64 {
 	var result color.RGBA64
 
@@ -12,23 +14,8 @@ func Ray(x, y, z, dx, dy, dz, maxDistance float64) color.RGBA64 {
 	ddist := math.Sqrt(dx*dx + dy*dy + dz*dz)
 
 	for result.A != 0xffff && dist < maxDistance {
-		c := Point(x, y, z)
-		sr := uint64(result.R) * 0x10001
-		sg := uint64(result.G) * 0x10001
-		sb := uint64(result.B) * 0x10001
-		sa := uint64(result.A) * 0x10001
-
-		dr := uint64(c.R)
-		dg := uint64(c.G)
-		db := uint64(c.B)
-		da := uint64(c.A)
-
-		a := (0xffffffff - sa) * 0x10001
-
-		result.R = uint16((dr*a/0xffffffff + sr) >> 16)
-		result.G = uint16((dg*a/0xffffffff + sg) >> 16)
-		result.B = uint16((db*a/0xffffffff + sb) >> 16)
-		result.A = uint16((da*a/0xffffffff + sa) >> 16)
+		result = Add(result, Point(x, y, z))
+		result = Add(result, fog)
 
 		x += dx
 		y += dy
@@ -37,4 +24,25 @@ func Ray(x, y, z, dx, dy, dz, maxDistance float64) color.RGBA64 {
 	}
 
 	return result
+}
+
+func Add(top, bottom color.RGBA64) color.RGBA64 {
+	sr := uint64(top.R) * 0x10001
+	sg := uint64(top.G) * 0x10001
+	sb := uint64(top.B) * 0x10001
+	sa := uint64(top.A) * 0x10001
+
+	dr := uint64(bottom.R)
+	dg := uint64(bottom.G)
+	db := uint64(bottom.B)
+	da := uint64(bottom.A)
+
+	a := (0xffffffff - sa) * 0x10001
+
+	return color.RGBA64{
+		R: uint16((dr*a/0xffffffff + sr) >> 16),
+		G: uint16((dg*a/0xffffffff + sg) >> 16),
+		B: uint16((db*a/0xffffffff + sb) >> 16),
+		A: uint16((da*a/0xffffffff + sa) >> 16),
+	}
 }
