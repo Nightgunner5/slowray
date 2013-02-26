@@ -9,9 +9,14 @@ import (
 )
 
 const (
-	ppp  = 4 // pixels per point
-	spp  = 4 // samples per pixel
+	ppi  = 16 // points per image
+	ppp  = 4  // pixels per point
+	spp  = 4  // samples per pixel
 	spp2 = spp * spp
+
+	epsilon = 0.001
+	nearZ   = 1
+	farZ    = 100
 )
 
 func Pixel(x, y int, img *image.RGBA64, wg *sync.WaitGroup) {
@@ -19,7 +24,14 @@ func Pixel(x, y int, img *image.RGBA64, wg *sync.WaitGroup) {
 
 	for i := 0; i < spp; i++ {
 		for j := 0; j < spp; j++ {
-			c := Ray((float64(x)+float64(i)/spp)/ppp, (float64(y)+float64(j)/spp)/ppp, -10, 0, 0, 0.001, 100)
+			X := (float64(x) + float64(i)/spp) / ppp
+			Y := (float64(y) + float64(j)/spp) / ppp
+			c := Ray(X, Y, -10,
+				(X/ppi-0.5)*epsilon,
+				(Y/ppi-0.5)*epsilon,
+				1*epsilon,
+				farZ)
+
 			r += uint64(c.R)
 			g += uint64(c.G)
 			b += uint64(c.B)
@@ -33,7 +45,7 @@ func Pixel(x, y int, img *image.RGBA64, wg *sync.WaitGroup) {
 func main() {
 	var wg sync.WaitGroup
 
-	const dim = 16 * ppp
+	const dim = ppi * ppp
 
 	img := image.NewRGBA64(image.Rect(0, 0, dim, dim))
 

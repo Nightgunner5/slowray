@@ -5,8 +5,6 @@ import (
 	"math"
 )
 
-var fog = color.RGBA64{0x2, 0x4, 0x5, 0x5}
-
 func Ray(x, y, z, dx, dy, dz, maxDistance float64) color.RGBA64 {
 	var result color.RGBA64
 
