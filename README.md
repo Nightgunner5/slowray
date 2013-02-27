@@ -20,4 +20,8 @@ _All arguments take a single, required parameter._
 <dd>The number of pixels per point. Defaults to 8, resulting (with the default -ppi of 16) in a 128x128 pixel image.</dd>
 <dt>-spp</dt>
 <dd>The number of samples per pixel, in both x and y directions. This allows multisampled antialiasing. Defaults to 4, which means 16 samples per pixel.</dd>
+<dt>-x</dt>
+<dt>-y</dt>
+<dt>-z</dt>
+<dd>The base X, Y, and Z coordinates for the virtual camera. Defaults to 0, 0, and -10, respectively.</dd>
 </dl>

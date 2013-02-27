@@ -19,11 +19,15 @@ var (
 
 	output  = flag.String("o", "render.png", "output file")
 	cpuprof = flag.String("cpuprof", "", "write cpu profile to file")
+
+	basex = flag.Float64("x", 0, "base X coordinate")
+	basey = flag.Float64("y", 0, "base Y coordinate")
+	basez = flag.Float64("z", -10, "base Z coordinate")
 )
 
 const (
 	epsilon = 0.01
-	farZ    = 100
+	farZ    = 200
 )
 
 func Pixel(x, y int, img *image.RGBA64, wg *sync.WaitGroup) {
@@ -33,10 +37,10 @@ func Pixel(x, y int, img *image.RGBA64, wg *sync.WaitGroup) {
 		for j := 0; j < *spp; j++ {
 			X := (float64(x)+float64(i)/float64(*spp))/float64(*ppp) - float64(*ppi)/2
 			Y := float64(*ppi)/2 - (float64(y)+float64(j)/float64(*spp))/float64(*ppp)
-			c := Ray(X, Y, -10,
+			c := Ray(X+*basex, Y+*basey, *basez,
 				X/float64(*ppi)*epsilon,
 				Y/float64(*ppi)*epsilon,
-				1*epsilon,
+				epsilon,
 				farZ)
 
 			r += uint64(c.R)
