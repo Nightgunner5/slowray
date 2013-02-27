@@ -1,6 +1,7 @@
 package main
 
 import (
+	"flag"
 	"image"
 	"image/color"
 	"image/png"
@@ -9,27 +10,27 @@ import (
 	"sync"
 )
 
-const (
-	ppi  = 16 // points per image
-	ppp  = 32 // pixels per point
-	spp  = 4  // samples per pixel
-	spp2 = spp * spp
+var (
+	ppi = flag.Int("ppi", 16, "points per image")
+	ppp = flag.Int("ppp", 8, "pixels per point")
+	spp = flag.Int("spp", 4, "samples per pixel")
+)
 
+const (
 	epsilon = 0.01
-	nearZ   = 1
 	farZ    = 100
 )
 
 func Pixel(x, y int, img *image.RGBA64, wg *sync.WaitGroup) {
 	var r, g, b, a uint64
 
-	for i := 0; i < spp; i++ {
-		for j := 0; j < spp; j++ {
-			X := (float64(x)+float64(i)/spp)/ppp - ppi/2
-			Y := ppi/2 - (float64(y)+float64(j)/spp)/ppp
+	for i := 0; i < *spp; i++ {
+		for j := 0; j < *spp; j++ {
+			X := (float64(x)+float64(i)/float64(*spp))/float64(*ppp) - float64(*ppi)/2
+			Y := float64(*ppi)/2 - (float64(y)+float64(j)/float64(*spp))/float64(*ppp)
 			c := Ray(X, Y, -10,
-				X/ppi*epsilon,
-				Y/ppi*epsilon,
+				X/float64(*ppi)*epsilon,
+				Y/float64(*ppi)*epsilon,
 				1*epsilon,
 				farZ)
 
@@ -39,18 +40,30 @@ func Pixel(x, y int, img *image.RGBA64, wg *sync.WaitGroup) {
 			a += uint64(c.A)
 		}
 	}
-	img.SetRGBA64(x, y, color.RGBA64{uint16(r / spp2), uint16(g / spp2), uint16(b / spp2), uint16(a / spp2)})
+	img.SetRGBA64(x, y, color.RGBA64{
+		uint16(r / uint64(*spp) / uint64(*spp)),
+		uint16(g / uint64(*spp) / uint64(*spp)),
+		uint16(b / uint64(*spp) / uint64(*spp)),
+		uint16(a / uint64(*spp) / uint64(*spp)),
+	})
 	wg.Done()
 }
 
 func main() {
+	var cpus *int
 	if runtime.GOMAXPROCS(0) == 1 {
-		runtime.GOMAXPROCS(runtime.NumCPU())
+		cpus = flag.Int("cpus", runtime.NumCPU(), "the number of processor cores to use at any given time")
+	} else {
+		cpus = flag.Int("cpus", runtime.GOMAXPROCS(0), "the number of processor cores to use at any given time")
 	}
+
+	flag.Parse()
+
+	runtime.GOMAXPROCS(*cpus)
 
 	var wg sync.WaitGroup
 
-	const dim = ppi * ppp
+	dim := *ppi * *ppp
 
 	img := image.NewRGBA64(image.Rect(0, 0, dim, dim))
 
