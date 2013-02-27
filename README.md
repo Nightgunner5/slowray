@@ -13,7 +13,7 @@ _All arguments take a single, required parameter._
 <dt>-o</dt>
 <dd>The (relative or absolute) path to the file that should contain the output of SlowRAY. Defaults to render.png in the current directory.</dd>
 <dt>-oct</dt>
-<dd>The number of octaves of perlin noise to use. Each octave of noise is scaled and layered onto the previous layers, making the output less smooth and more interesting. Defaults to 3 octaves.</dd>
+<dd>The number of octaves of <a href="http://mrl.nyu.edu/~perlin/noise/">perlin noise</a> to use. Each octave of noise is scaled and layered onto the previous layers, making the output less smooth and more interesting. Defaults to 3 octaves.</dd>
 <dt>-ppi</dt>
 <dd>The number of points in the rendered image. One point roughly converts to a unit cube in perlin noise. Defaults to 16, resulting in a 16x16 <strong>point</strong> image.</dd>
 <dt>-ppp</dt>
