@@ -7,6 +7,7 @@ import (
 	"image/png"
 	"os"
 	"runtime"
+	"runtime/pprof"
 	"sync"
 )
 
@@ -14,6 +15,9 @@ var (
 	ppi = flag.Int("ppi", 16, "points per image")
 	ppp = flag.Int("ppp", 8, "pixels per point")
 	spp = flag.Int("spp", 4, "samples per pixel")
+
+	output  = flag.String("o", "render.png", "output file")
+	cpuprof = flag.String("cpuprof", "", "write cpu profile to file")
 )
 
 const (
@@ -49,6 +53,12 @@ func Pixel(x, y int, img *image.RGBA64, wg *sync.WaitGroup) {
 	wg.Done()
 }
 
+func Worker(ch <-chan [2]int, img *image.RGBA64, wg *sync.WaitGroup) {
+	for p := range ch {
+		Pixel(p[0], p[1], img, wg)
+	}
+}
+
 func main() {
 	var cpus *int
 	if runtime.GOMAXPROCS(0) == 1 {
@@ -59,6 +69,16 @@ func main() {
 
 	flag.Parse()
 
+	if *cpuprof != "" {
+		f, err := os.Create(*cpuprof)
+		if err != nil {
+			panic(err)
+		}
+		defer f.Close()
+		pprof.StartCPUProfile(f)
+		defer pprof.StopCPUProfile()
+	}
+
 	runtime.GOMAXPROCS(*cpus)
 
 	var wg sync.WaitGroup
@@ -67,16 +87,23 @@ func main() {
 
 	img := image.NewRGBA64(image.Rect(0, 0, dim, dim))
 
+	ch := make(chan [2]int, 16)
+	for i := 0; i < *cpus; i++ {
+		go Worker(ch, img, &wg)
+	}
+
 	for x := 0; x < dim; x++ {
 		for y := 0; y < dim; y++ {
 			wg.Add(1)
-			go Pixel(x, y, img, &wg)
+			ch <- [2]int{x, y}
 		}
 	}
 
+	close(ch)
+
 	wg.Wait()
 
-	f, err := os.Create("render.png")
+	f, err := os.Create(*output)
 	if err != nil {
 		panic(err)
 	}

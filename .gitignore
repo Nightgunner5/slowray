@@ -1,3 +1,4 @@
 slowray
 slowray.exe
-render.png
+*.png
+*.prof
