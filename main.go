@@ -15,6 +15,7 @@ var (
 	ppi = flag.Int("ppi", 16, "points per image")
 	ppp = flag.Int("ppp", 8, "pixels per point")
 	spp = flag.Int("spp", 4, "samples per pixel")
+	oct = flag.Int("oct", 3, "octaves of noise")
 
 	output  = flag.String("o", "render.png", "output file")
 	cpuprof = flag.String("cpuprof", "", "write cpu profile to file")
@@ -80,6 +81,10 @@ func main() {
 	}
 
 	runtime.GOMAXPROCS(*cpus)
+
+	noise0 = NewNoiseGen(0, *oct)
+	noise1 = NewNoiseGen(1, *oct)
+	noise2 = NewNoiseGen(2, *oct)
 
 	var wg sync.WaitGroup
 

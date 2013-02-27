@@ -6,11 +6,7 @@ import (
 
 var fog = color.RGBA64{0x2, 0x4, 0x5, 0x10}
 
-var (
-	noise0 = NewNoiseGen(0)
-	noise1 = NewNoiseGen(1)
-	noise2 = NewNoiseGen(2)
-)
+var noise0, noise1, noise2 NoiseGen
 
 func Point(x, y, z float64) color.RGBA64 {
 	x /= 5
