@@ -85,23 +85,39 @@ func noisegen_lerp(t, a, b float64) float64 {
 }
 func noisegen_grad(hash uint8, x, y, z float64) float64 {
 	// Convert low four bits of hash code into twelve gradient directions.
-	h := hash & 15
-	u := y
-	if h < 8 {
-		u = x
+	switch uint(hash & 15) {
+	case 0:
+		return x + y
+	case 1:
+		return -x + y
+	case 2:
+		return x - y
+	case 3:
+		return -x - y
+	case 4:
+		return x + z
+	case 5:
+		return -x + z
+	case 6:
+		return x - z
+	case 7:
+		return -x - z
+	case 8:
+		return y + z
+	case 9:
+		return -y + z
+	case 10:
+		return y - z
+	case 11:
+		return -y - z
+	case 12:
+		return y + x
+	case 13:
+		return -y + z
+	case 14:
+		return y - x
+	case 15:
+		return -y - z
 	}
-	v := z
-	if h < 4 {
-		v = y
-	} else if h == 12 || h == 14 {
-		v = x
-	}
-
-	if h&1 == 1 {
-		u = -u
-	}
-	if h&2 == 2 {
-		v = -v
-	}
-	return u + v
+	panic("unreachable")
 }
